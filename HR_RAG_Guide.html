@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Руководство по запуску HR RAG Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-cyan: #06b6d4;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #020617 100%);
+            color: var(--text-main);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+            width: 0%;
+            z-index: 9999;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            position: relative;
+        }
+
+        /* Header with gradient */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 50px;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        /* Animated Title */
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #93c5fd 50%, #60a5fa 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+            animation: gradientShift 4s ease infinite;
+            text-shadow: 0 0 40px var(--primary-glow);
+        }
+
+        @keyframes gradientShift {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* Hero Features */
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 30px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.3s;
+        }
+
+        .hero-feature:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--primary-glow);
+            border-color: var(--primary);
+        }
+
+        /* About Section */
+        .about-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.1));
+            border: 2px solid var(--primary);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            animation: pulse-bg 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .about-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .capability-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .capability-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateX(5px);
+        }
+
+        .capability-item .cap-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px var(--shadow);
+            z-index: 1000;
+            max-width: 200px;
+        }
+
+        .nav-menu h3 {
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-menu a .check-mark {
+            margin-left: auto;
+            opacity: 0;
+            color: var(--accent-green);
+            transition: opacity 0.3s;
+        }
+
+        .nav-menu a.completed .check-mark {
+            opacity: 1;
+        }
+
+        /* Step Cards */
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 50px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px var(--shadow);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .step-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(59, 130, 246, 0.2);
+            border-color: var(--primary);
+        }
+
+        .step-card.visible:hover {
+            transform: translateY(-5px);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .step-icon-wrapper {
+            position: relative;
+        }
+
+        .step-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 28px;
+            height: 28px;
+            background: var(--accent-green);
+            color: white;
+            font-weight: 800;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 3px solid var(--bg-card);
+            z-index: 2;
+        }
+
+        .step-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            margin-left: auto;
+        }
+
+        .node-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .node-telegram {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.1));
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .node-pinecone {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(236, 72, 153, 0.1));
+            color: #f472b6;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .node-cohere {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1));
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .node-green {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        p,
+        ul,
+        ol {
+            color: #e2e8f0;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        li {
+            margin-bottom: 12px;
+            padding-left: 10px;
+        }
+
+        code {
+            background: rgba(59, 130, 246, 0.15);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: var(--accent-cyan);
+            font-size: 0.95em;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        a {
+            color: var(--primary);
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+        }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            background: rgba(59, 130, 246, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 12px 12px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .highlight-box strong {
+            color: var(--primary);
+        }
+
+        /* Requirements Box */
+        .requirements-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 2px solid var(--accent-yellow);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+
+        .requirements-box h3 {
+            color: var(--accent-yellow);
+            margin-top: 0;
+        }
+
+        .requirements-box h3::before {
+            background: var(--accent-yellow);
+        }
+
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .requirement-item:hover {
+            transform: translateX(5px);
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .requirement-item .icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-yellow);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Download Button */
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin: 10px 10px 10px 0;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .download-btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.6);
+        }
+
+        .credentials-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 2px dashed var(--accent-green);
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .credentials-title {
+            color: var(--accent-green);
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        /* Free Badge */
+        .free-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            50% {
+                opacity: 0.9;
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--accent-red);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .warning-box .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--accent-green);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .tip-box .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            backdrop-filter: blur(10px);
+        }
+
+        .lightbox.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .lightbox img {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: zoomIn 0.3s ease;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 3rem;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .lightbox-close:hover {
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        .step-checkbox {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .step-checkbox .checkmark {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .step-checkbox:hover .checkmark {
+            border-color: var(--accent-green);
+        }
+
+        .step-checkbox input:checked+.checkmark {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .step-checkbox input:checked+.checkmark::after {
+            content: '\2713';
+            color: white;
+            font-weight: bold;
+        }
+
+        .step-checkbox input {
+            display: none;
+        }
+
+        .step-checkbox-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Result Section */
+        .result-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+            border: 2px solid var(--accent-green);
+            border-radius: 24px;
+            padding: 40px;
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .result-section h2 {
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .result-item {
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .result-item:hover {
+            transform: translateY(-5px);
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .result-item .result-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .result-item h4 {
+            color: var(--accent-green);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .result-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-top: 60px;
+        }
+
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: var(--primary);
+        }
+
+        .faq-question {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .faq-question:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .faq-question .arrow {
+            transition: transform 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .faq-item.open .faq-question .arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+            padding: 0 25px;
+            color: var(--text-muted);
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 500px;
+            padding: 0 25px 20px;
+        }
+
+        /* Next Steps Section */
+        .next-steps {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+            border: 2px solid var(--accent-purple);
+            border-radius: 24px;
+            padding: 40px;
+            margin: 50px 0;
+        }
+
+        .next-steps h2 {
+            margin-bottom: 25px;
+        }
+
+        .next-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .next-step-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .next-step-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: translateX(5px);
+        }
+
+        .next-step-item .step-num {
+            width: 36px;
+            height: 36px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .next-step-item h4 {
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .next-step-item p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.6);
+        }
+
+        .scroll-top svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @media (max-width: 1200px) {
+            .nav-menu {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .step-card {
+                padding: 30px 25px;
+            }
+            .step-header {
+                flex-wrap: wrap;
+            }
+            .step-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .step-checkbox {
+                position: static;
+                margin-top: 15px;
+            }
+            .requirements-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-features {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightboxImg" src="" alt="">
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+        <h3>Навигация</h3>
+        <a href="#about"><span class="nav-icon">🤖</span> О Боте <span class="check-mark">✓</span></a>
+        <a href="#requirements"><span class="nav-icon">📋</span> Ресурсы <span class="check-mark">✓</span></a>
+        <a href="#step1"><span class="nav-icon">📱</span> Telegram <span class="check-mark">✓</span></a>
+        <a href="#step2"><span class="nav-icon">🔑</span> API Ключи <span class="check-mark">✓</span></a>
+        <a href="#step3"><span class="nav-icon">📊</span> Данные <span class="check-mark">✓</span></a>
+        <a href="#step4"><span class="nav-icon">⚙️</span> n8n Setup <span class="check-mark">✓</span></a>
+        <a href="#step5"><span class="nav-icon">🚀</span> Тест <span class="check-mark">✓</span></a>
+        <a href="#faq"><span class="nav-icon">❓</span> FAQ <span class="check-mark">✓</span></a>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Настройка HR RAG Assistant</h1>
+            <div class="subtitle">AI-консультант по внутренним регламентам и онбордингу</div>
+
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <span class="icon">🚀</span>
+                    <span>Ответ за 2 сек</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="icon">📚</span>
+                    <span>Знает ВСЕ правила</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="icon">🔗</span>
+                    <span>Цитаты источников</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="icon">🛡️</span>
+                    <span>Без галлюцинаций</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- About Section -->
+        <div class="about-section" id="about">
+            <h2><span class="avatar">👨‍⚖️</span> Что мы строим</h2>
+            <p style="font-size: 1.15rem; color: var(--text-main); margin-bottom: 20px; position: relative; z-index: 1;">
+                <strong>HR RAG Assistant</strong> — это умный бот, который заменяет HR-менеджера в ответах на рутинные
+                вопросы сотрудников.
+                Он читает ваши регламенты (PDF, Docs, Sheets), запоминает их в векторную базу данных и выдает точные
+                ответы со ссылками на пункты правил.
+            </p>
+
+            <div class="capabilities-grid">
+                <div class="capability-item">
+                    <div class="cap-icon">🎯</div>
+                    <div>
+                        <strong>Точность 99%</strong><br>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">RAG технология</span>
+                    </div>
+                </div>
+                <div class="capability-item">
+                    <div class="cap-icon">⚡</div>
+                    <div>
+                        <strong>Скорость</strong><br>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Мгновенный поиск</span>
+                    </div>
+                </div>
+                <div class="capability-item">
+                    <div class="cap-icon">🔒</div>
+                    <div>
+                        <strong>Безопасно</strong><br>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Данные под контролем</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="step-card visible" style="transform: none; opacity: 1;">
+            <div class="step-header">
+                <div class="step-icon" style="background: linear-gradient(135deg, var(--accent-purple), var(--primary));">🆚</div>
+                <div>
+                    <h2>Чем это лучше ChatGPT?</h2>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; color: var(--text-main);">
+                    <tr style="border-bottom: 2px solid var(--border);">
+                        <th style="text-align: left; padding: 15px;">Параметр</th>
+                        <th style="text-align: left; padding: 15px; color: var(--text-muted);">ChatGPT</th>
+                        <th style="text-align: left; padding: 15px; color: var(--accent-green);">HR RAG (Наш бот)</th>
+                        <th style="text-align: left; padding: 15px;">Победитель</th>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 15px;"><strong>Знание правил</strong></td>
+                        <td style="padding: 15px;">0% (Гадает)</td>
+                        <td style="padding: 15px;"><strong>100% (Ваши доки)</strong></td>
+                        <td style="padding: 15px;">🏆 RAG</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 15px;">Юридическая защита</td>
+                        <td style="padding: 15px;">Нет</td>
+                        <td style="padding: 15px;"><strong>Да (Ссылки на ст.)</strong></td>
+                        <td style="padding: 15px;">🏆 RAG</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 15px;">Скорость</td>
+                        <td style="padding: 15px;">~10 сек</td>
+                        <td style="padding: 15px;"><strong>~2 сек</strong></td>
+                        <td style="padding: 15px;">🏆 RAG</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Architecture Visualization -->
+        <div class="step-card visible" style="transform: none; opacity: 1;">
+            <h3>Как это работает (Под капотом)</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; text-align: center;">
+                <div style="flex: 1; min-width: 120px; padding: 20px; background: rgba(56, 189, 248, 0.1); border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">👤</div>
+                    <div style="font-weight: bold; color: #38bdf8;">Сотрудник</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">Пишет вопрос</div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted);">➜</div>
+                <div style="flex: 1; min-width: 120px; padding: 20px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🤖</div>
+                    <div style="font-weight: bold; color: #34d399;">n8n</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">Мозг системы</div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted);">➜</div>
+                <div style="flex: 1; min-width: 120px; padding: 20px; background: rgba(236, 72, 153, 0.1); border-radius: 12px; border: 1px solid rgba(236, 72, 153, 0.3);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🌲</div>
+                    <div style="font-weight: bold; color: #f472b6;">Pinecone</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">Поиск законов</div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted);">➜</div>
+                <div style="flex: 1; min-width: 120px; padding: 20px; background: rgba(168, 85, 247, 0.1); border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.3);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🧠</div>
+                    <div style="font-weight: bold; color: #c084fc;">AI (LLM)</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">Формирует ответ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requirements Section -->
+        <div class="requirements-box" id="requirements">
+            <h3>Что понадобится (Бесплатные тарифы)</h3>
+            <p>Убедитесь, что у вас есть все необходимое:</p>
+            <div class="requirements-grid">
+                <div class="requirement-item">
+                    <div class="icon">🔧</div>
+                    <div><strong>n8n</strong><br><span style="color: var(--text-muted);">Desktop / Cloud</span></div>
+                </div>
+                <div class="requirement-item">
+                    <div class="icon">🌲</div>
+                    <div><strong>Pinecone API</strong><br><span style="color: var(--text-muted);">Векторная база</span></div>
+                </div>
+                <div class="requirement-item">
+                    <div class="icon">🧬</div>
+                    <div><strong>OpenAI API</strong><br><span style="color: var(--text-muted);">Эмбеддинги</span></div>
+                </div>
+                <div class="requirement-item">
+                    <div class="icon">🧠</div>
+                    <div><strong>OpenRouter</strong><br><span style="color: var(--text-muted);">DeepSeek / GPT</span></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <p>Скачайте готовые схемы для старта:</p>
+                <a onclick="downloadWorkflow('ingestion')" class="download-btn">
+                    📥 Скачать Ingestion (База)
+                </a>
+                <a onclick="downloadWorkflow('chat')" class="download-btn"
+                    style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));">
+                    💬 Скачать Chat Bot (Логика)
+                </a>
+            </div>
+        </div>
+
+        <!-- ==================== STEP 1: TELEGRAM ==================== -->
+        <div class="step-card" id="step1">
+            <label class="step-checkbox" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="toggleStepComplete(1, this.checked)">
+                <span class="checkmark"></span>
+                <span class="step-checkbox-label">Готово</span>
+            </label>
+
+            <div class="step-header">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">📱</div>
+                    <span class="step-number-badge">1</span>
+                </div>
+                <div>
+                    <span class="node-tag node-telegram">Telegram</span>
+                    <h2>Создание бота и получение токена</h2>
+                </div>
+                <span class="step-time">⏱️ ~5 мин</span>
+            </div>
+
+            <p>Первым делом нам нужно зарегистрировать бота в Telegram через BotFather.</p>
+
+            <h3>Инструкция:</h3>
+            <ol>
+                <li>Откройте Telegram и найдите бота <strong><a href="https://t.me/BotFather" target="_blank" style="color: #38bdf8;">@BotFather</a></strong>.</li>
+                <li>Нажмите <code>Start</code> и отправьте команду <code>/newbot</code>.</li>
+                <li>Введите имя бота (например: <code>HR Assistant Demo</code>).</li>
+                <li>Введите юзернейм (должен заканчиваться на <code>bot</code>, например: <code>my_hr_demo_bot</code>).</li>
+                <li>BotFather пришлет <strong>HTTP API Token</strong> — длинную строку вида:
+                    <div style="background: #0f172a; padding: 12px 16px; margin: 10px 0; border: 1px dashed var(--accent-yellow); border-radius: 8px; font-family: monospace; color: var(--accent-cyan);">
+                        560875432:AAHf8G... (Скопируйте это!)
+                    </div>
+                </li>
+            </ol>
+
+            <div class="credentials-box">
+                <span class="credentials-title">📥 Куда вставлять в n8n:</span>
+                <ol>
+                    <li>В n8n перейдите в меню слева: <strong>Credentials</strong>.</li>
+                    <li>Нажмите кнопку <strong>Add Credential</strong>.</li>
+                    <li>В поиске напишите <code>Telegram API</code> и выберите его.</li>
+                    <li>Вставьте скопированный токен в поле <strong>Access Token</strong>.</li>
+                    <li>Назовите его <code>Telegram Bot</code> и нажмите <strong>Save</strong>.</li>
+                </ol>
+            </div>
+
+            <div class="tip-box">
+                <span class="icon">💡</span>
+                <div>
+                    <strong>Совет:</strong> Сразу отправьте боту <code>/start</code> в Telegram, чтобы активировать чат. Без этого бот не сможет отправлять вам сообщения первым.
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== STEP 2: API KEYS ==================== -->
+        <div class="step-card" id="step2">
+            <label class="step-checkbox" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="toggleStepComplete(2, this.checked)">
+                <span class="checkmark"></span>
+                <span class="step-checkbox-label">Готово</span>
+            </label>
+
+            <div class="step-header">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">🔑</div>
+                    <span class="step-number-badge">2</span>
+                </div>
+                <div>
+                    <span class="node-tag node-cohere">API Keys</span>
+                    <h2>Получение ключей API</h2>
+                </div>
+                <span class="step-time">⏱️ ~15 мин</span>
+            </div>
+
+            <p>Для работы бота нужны три ключа: Pinecone (векторная база), OpenAI (эмбеддинги), OpenRouter (мозг).</p>
+
+            <!-- ===== PINECONE ===== -->
+            <div style="margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>1. Pinecone (Векторная база)</h3>
+                    <span class="free-badge">Free</span>
+                </div>
+                <p>Pinecone хранит ваши данные в виде векторов и позволяет мгновенно находить релевантные фрагменты. Бесплатный тариф покрывает до 100,000 записей.</p>
+
+                <ol>
+                    <li>Перейдите на <a href="https://app.pinecone.io" target="_blank">app.pinecone.io</a> и зарегистрируйтесь (можно через Google).</li>
+                    <li>Нажмите <strong>Create Index</strong>.</li>
+                    <li>Заполните поля:
+                        <ul style="margin-top: 8px;">
+                            <li><strong>Name:</strong> <code>legal-assistant</code> (или любое другое)</li>
+                            <li><strong>Dimensions:</strong> <code>1536</code> (стандарт для OpenAI <code>text-embedding-3-small</code>)</li>
+                            <li><strong>Metric:</strong> <code>cosine</code> (рекомендуется для текстового поиска)</li>
+                        </ul>
+                    </li>
+                    <li>Нажмите <strong>Create Index</strong> и дождитесь создания.</li>
+                    <li>В меню слева выберите <strong>API Keys</strong> → Скопируйте ключ.</li>
+                </ol>
+
+                <div class="warning-box">
+                    <span class="icon">⚠️</span>
+                    <div>
+                        <strong>Важно!</strong> Запишите также <strong>Environment URL</strong> вашего индекса (он понадобится в HTTP-запросах). Его видно на странице индекса: выглядит как <code>https://your-index-xxxxx.svc.xxxxx.pinecone.io</code>
+                    </div>
+                </div>
+
+                <div class="credentials-box">
+                    <span class="credentials-title">📥 Куда вставлять в n8n:</span>
+                    <ol>
+                        <li>В n8n перейдите в <strong>Credentials</strong> → <strong>Add Credential</strong>.</li>
+                        <li>Найдите <strong>Pinecone API</strong>.</li>
+                        <li>Вставьте скопированный API Key.</li>
+                        <li>Назовите его <code>Pinecone</code> и нажмите <strong>Save</strong>.</li>
+                    </ol>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);">
+                        <strong>Альтернатива:</strong> В нашем воркфлоу Pinecone используется через HTTP Request (не через встроенную ноду). В этом случае API Key вставляется прямо в заголовок запроса — это уже настроено в скачанном JSON.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ===== OPENAI ===== -->
+            <div style="margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>2. OpenAI (Для Эмбеддингов)</h3>
+                    <span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">$5 Credit</span>
+                </div>
+                <p>OpenAI используется только для превращения текста в векторы (эмбеддинги). Модель <code>text-embedding-3-small</code> стоит копейки — $0.02 за 1 млн токенов.</p>
+
+                <ol>
+                    <li>Перейдите на <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>.</li>
+                    <li>Войдите или зарегистрируйтесь.</li>
+                    <li>Нажмите <strong>Create new secret key</strong>.</li>
+                    <li>Придумайте название (например: <code>n8n-embeddings</code>).</li>
+                    <li>Скопируйте ключ <code>sk-...</code>.
+                        <div class="warning-box" style="margin-top: 10px;">
+                            <span class="icon">🔴</span>
+                            <div>Ключ показывается <strong>только один раз!</strong> Сразу скопируйте и сохраните его в надежное место.</div>
+                        </div>
+                    </li>
+                    <li>Перейдите в <strong>Settings → Billing</strong> и пополните баланс минимум на $5 (Credit Card или Debit Card).</li>
+                </ol>
+
+                <div class="credentials-box">
+                    <span class="credentials-title">📥 Куда вставлять в n8n:</span>
+                    <ol>
+                        <li>В n8n перейдите в <strong>Credentials</strong> → <strong>Add Credential</strong>.</li>
+                        <li>Найдите <strong>OpenAI API</strong> (или <strong>OpenAi API</strong>).</li>
+                        <li>Вставьте ключ <code>sk-...</code> в поле <strong>API Key</strong>.</li>
+                        <li>Назовите его <code>OpenAI account</code> и нажмите <strong>Save</strong>.</li>
+                    </ol>
+                </div>
+
+                <div class="tip-box">
+                    <span class="icon">💡</span>
+                    <div>
+                        <strong>Расходы:</strong> Для загрузки 100 документов в Pinecone уйдет примерно $0.01. Для 1000 запросов пользователей — еще $0.02. Это очень дешево!
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== OPENROUTER ===== -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>3. OpenRouter (Мозг — DeepSeek / GPT)</h3>
+                    <span style="background: var(--accent-purple); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">от $2</span>
+                </div>
+                <p>OpenRouter — это единый шлюз к разным AI моделям (DeepSeek-V3, GPT-4o, Claude 3.5). Работает без VPN из РФ и принимает крипту.</p>
+
+                <div class="tip-box">
+                    <span class="icon">💡</span>
+                    <div>
+                        <strong>Рекомендуемая модель:</strong> <code>deepseek/deepseek-chat</code> — быстрая, умная и очень дешевая. Для RAG-бота идеальна!<br>
+                        <strong>Альтернатива:</strong> <code>google/gemini-2.0-flash-001</code> — бесплатный лимит для старта.
+                    </div>
+                </div>
+
+                <!-- Zarub payment instructions -->
+                <div class="highlight-box" style="border-left-color: var(--accent-purple); background: rgba(139, 92, 246, 0.1);">
+                    <strong>💳 Как оплатить из РФ через Zarub:</strong>
+                    <p style="margin-top: 10px;">Сервис Zarub позволяет выпустить зарубежную виртуальную карту для оплаты OpenRouter, OpenAI и других сервисов.</p>
+                    <ol style="margin-top: 10px;">
+                        <li>Перейдите в <a href="https://t.me/zarub_robot" target="_blank" style="color: var(--accent-purple); font-weight: bold;">Telegram-бот @zarub_robot</a>.</li>
+                        <li><strong>Пополнение:</strong> Минимальная сумма — $10. Можно пополнить с российской карты или криптой.</li>
+                        <li><strong>Выпуск карты:</strong> В приложении нажмите <strong>"Выпустить карту"</strong>. Пополните баланс кошелька. Нажмите <strong style="color: #10b981;">зеленую кнопку</strong> (перевести на карту), чтобы деньги попали на счет карты.</li>
+                        <li><strong>Оплата:</strong> Нажмите <strong style="color: #8b5cf6;">фиолетовую кнопку</strong> — она покажет реквизиты карты. Используйте их при привязке карты в OpenRouter.</li>
+                    </ol>
+                </div>
+
+                <h3 style="margin-top: 25px;">Получение API ключа OpenRouter:</h3>
+                <ol>
+                    <li>Зайдите на <a href="https://openrouter.ai" target="_blank">openrouter.ai</a> и зарегистрируйтесь.</li>
+                    <li>Перейдите в раздел <a href="https://openrouter.ai/credits" target="_blank"><strong>Credits</strong></a> → <strong>Add credits</strong> и пополните баланс на $2+.</li>
+                    <li>Перейдите в раздел <a href="https://openrouter.ai/keys" target="_blank"><strong>Keys</strong></a> → <strong>Create Key</strong>.</li>
+                    <li>Придумайте название (например: <code>n8n-rag-bot</code>).</li>
+                    <li>Скопируйте ключ <code>sk-or-...</code>.</li>
+                </ol>
+
+                <div class="credentials-box">
+                    <span class="credentials-title">📥 Куда вставлять в n8n (ВНИМАТЕЛЬНО!):</span>
+                    <p style="margin-bottom: 10px;">OpenRouter совместим с OpenAI API, поэтому в n8n мы создаем его как <strong>OpenAI Credential с кастомным URL</strong>:</p>
+                    <ol>
+                        <li>В n8n перейдите в <strong>Credentials</strong> → <strong>Add Credential</strong>.</li>
+                        <li>Найдите <strong>OpenAI API</strong> (да, именно OpenAI, не OpenRouter!).</li>
+                        <li>Вставьте ключ <code>sk-or-...</code> в поле <strong>API Key</strong>.</li>
+                        <li>Раскройте <strong>Options</strong> (внизу) и в поле <strong>Base URL</strong> впишите:
+                            <div style="background: #0f172a; padding: 10px 16px; margin: 8px 0; border: 1px solid var(--accent-purple); border-radius: 8px; font-family: monospace; color: var(--accent-purple);">
+                                https://openrouter.ai/api/v1
+                            </div>
+                        </li>
+                        <li>Назовите его <code>OpenRouter</code> и нажмите <strong>Save</strong>.</li>
+                    </ol>
+                </div>
+
+                <div class="warning-box" style="margin-top: 15px;">
+                    <span class="icon">⚠️</span>
+                    <div>
+                        <strong>Частая ошибка:</strong> Если забыть указать Base URL — n8n будет слать запросы в OpenAI вместо OpenRouter, и ключ не сработает. Обязательно проверьте, что Base URL = <code>https://openrouter.ai/api/v1</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary credentials -->
+            <div class="highlight-box">
+                <strong>📋 Итого — у вас должно быть 3 Credentials в n8n:</strong>
+                <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 10px; color: #38bdf8; font-weight: bold;">Telegram Bot</td>
+                        <td style="padding: 10px;">Telegram API</td>
+                        <td style="padding: 10px; color: var(--text-muted);">Токен от BotFather</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <td style="padding: 10px; color: #34d399; font-weight: bold;">OpenAI account</td>
+                        <td style="padding: 10px;">OpenAI API</td>
+                        <td style="padding: 10px; color: var(--text-muted);">Ключ sk-... (для эмбеддингов)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #c084fc; font-weight: bold;">OpenRouter</td>
+                        <td style="padding: 10px;">OpenAI API + Base URL</td>
+                        <td style="padding: 10px; color: var(--text-muted);">Ключ sk-or-... (для генерации)</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== STEP 3: DATA ==================== -->
+        <div class="step-card" id="step3">
+            <label class="step-checkbox" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="toggleStepComplete(3, this.checked)">
+                <span class="checkmark"></span>
+                <span class="step-checkbox-label">Готово</span>
+            </label>
+
+            <div class="step-header">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">📊</div>
+                    <span class="step-number-badge">3</span>
+                </div>
+                <div>
+                    <span class="node-tag node-pinecone">База Знаний</span>
+                    <h2>Подготовка данных</h2>
+                </div>
+                <span class="step-time">⏱️ ~3 мин</span>
+            </div>
+
+            <p>Для демо мы используем <strong>встроенные данные</strong> (Hardcoded JSON) в воркфлоу загрузки. Вам <strong>НЕ НУЖНО</strong> подключать Google Sheets прямо сейчас.</p>
+            <p>В файле <code>Legal_RAG_Ingestion</code> уже прописаны 7 статей законов и HR-правил (УК РФ, ТК РФ, ГК РФ).</p>
+
+            <div class="tip-box">
+                <span class="icon">💡</span>
+                <div>
+                    <strong>Как это работает:</strong> Данные → разбиваются на чанки (куски) → превращаются в векторы (эмбеддинги) → загружаются в Pinecone. При запросе пользователя бот ищет ближайшие по смыслу чанки и передает их LLM для генерации ответа.
+                </div>
+            </div>
+
+            <h3>Хотите свои данные?</h3>
+            <p>Если хотите заменить демо-данные на свои регламенты:</p>
+            <ol>
+                <li>Откройте узел <strong>"Load Legal Data"</strong> (Code Node) в Ingestion воркфлоу.</li>
+                <li>Замените текст в массиве <code>legalData</code> на ваши правила. Каждый элемент — это один документ с полями:
+                    <ul style="margin-top: 8px;">
+                        <li><code>id</code> — уникальный идентификатор</li>
+                        <li><code>content</code> — текст документа</li>
+                        <li><code>metadata</code> — мета-данные (тип, код, статья)</li>
+                    </ul>
+                </li>
+                <li>Сохраните и запустите воркфлоу.</li>
+            </ol>
+        </div>
+
+        <!-- ==================== STEP 4: N8N IMPORT ==================== -->
+        <div class="step-card" id="step4">
+            <label class="step-checkbox" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="toggleStepComplete(4, this.checked)">
+                <span class="checkmark"></span>
+                <span class="step-checkbox-label">Готово</span>
+            </label>
+
+            <div class="step-header">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">⚙️</div>
+                    <span class="step-number-badge">4</span>
+                </div>
+                <div>
+                    <span class="node-tag node-green">n8n</span>
+                    <h2>Импорт и настройка воркфлоу</h2>
+                </div>
+                <span class="step-time">⏱️ ~10 мин</span>
+            </div>
+
+            <p>Теперь импортируем оба воркфлоу в n8n и подставим ваши ключи.</p>
+
+            <!-- Ingestion -->
+            <div style="border-left: 4px solid var(--accent-green); padding-left: 20px; margin-bottom: 30px;">
+                <h3>1. Загрузка базы (Ingestion)</h3>
+                <ol>
+                    <li>В n8n нажмите <strong>+ Add Workflow</strong> → <strong>Import from File</strong>.</li>
+                    <li>Загрузите файл <code>Legal_RAG_Ingestion.json</code> (или вставьте JSON).</li>
+                    <li>Откройте узел <strong>"OpenAI Embeddings"</strong> — выберите ваш Credential <code>OpenAI account</code>.</li>
+                    <li>Откройте узел <strong>"Pinecone Upsert"</strong> — замените <code>YOUR_PINECONE_API_KEY</code> на ваш реальный ключ в Headers.</li>
+                    <li>Также замените URL Pinecone на ваш реальный URL индекса.</li>
+                    <li>Нажмите <strong>Execute Workflow</strong> (кнопка "Test workflow" внизу).</li>
+                    <li>Следите за зелеными галочками. Если все ноды прошли успешно — данные загружены в Pinecone!</li>
+                </ol>
+
+                <div class="tip-box">
+                    <span class="icon">✅</span>
+                    <div>
+                        <strong>Проверка:</strong> Зайдите в <a href="https://app.pinecone.io" target="_blank">Pinecone Console</a> → ваш индекс → вкладка <strong>Vectors</strong>. Должно быть 7+ записей.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat -->
+            <div style="border-left: 4px solid var(--primary); padding-left: 20px;">
+                <h3>2. Чат-бот (Chat)</h3>
+                <ol>
+                    <li>Создайте новый воркфлоу и импортируйте <code>Legal_RAG_Chat.json</code>.</li>
+                    <li>Настройте ноды (кликните на каждую и выберите нужный Credential):
+                        <ul style="margin-top: 8px;">
+                            <li><strong>Telegram Trigger</strong> → Credential: <code>Telegram Bot</code></li>
+                            <li><strong>Embed Question</strong> → Credential: <code>OpenAI account</code></li>
+                            <li><strong>Pinecone Query</strong> → замените <code>YOUR_PINECONE_API_KEY</code> и URL индекса</li>
+                            <li><strong>Legal AI Response</strong> → Credential: <code>OpenRouter</code></li>
+                            <li><strong>Send Telegram Response</strong> → Credential: <code>Telegram Bot</code></li>
+                        </ul>
+                    </li>
+                    <li>Нажмите переключатель <strong>Active</strong> вверху справа (чтобы бот слушал сообщения).</li>
+                </ol>
+
+                <div class="warning-box">
+                    <span class="icon">⚠️</span>
+                    <div>
+                        <strong>Важно:</strong> В узле <strong>Legal AI Response</strong> убедитесь, что выбрана нужная модель. По умолчанию стоит <code>gpt-4o-mini</code> — замените на модель из OpenRouter, например <code>deepseek/deepseek-chat</code>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== STEP 5: TEST ==================== -->
+        <div class="step-card" id="step5">
+            <label class="step-checkbox" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="toggleStepComplete(5, this.checked)">
+                <span class="checkmark"></span>
+                <span class="step-checkbox-label">Готово</span>
+            </label>
+
+            <div class="step-header">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">🚀</div>
+                    <span class="step-number-badge">5</span>
+                </div>
+                <div>
+                    <h2>Тестирование</h2>
+                </div>
+                <span class="step-time">⏱️ ~5 мин</span>
+            </div>
+
+            <p>Финальный этап — проверяем, что все работает!</p>
+
+            <ol>
+                <li>Убедитесь, что Chat воркфлоу <strong>Active</strong> (зеленый переключатель).</li>
+                <li>Откройте вашего бота в Telegram.</li>
+                <li>Напишите: <code>Можно ли работать с Бали?</code></li>
+                <li>Бот должен ответить со ссылками на статьи ТК РФ.</li>
+                <li>Попробуйте еще: <code>Какое наказание за кражу?</code> или <code>Как расторгнуть договор аренды?</code></li>
+            </ol>
+
+            <div class="warning-box">
+                <span class="icon">🔴</span>
+                <div>
+                    <strong>Бот не отвечает?</strong> Проверьте:
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li>Workflow активирован (переключатель Active зеленый)</li>
+                        <li>Все Credentials настроены правильно</li>
+                        <li>Нет ошибок во вкладке <strong>Executions</strong></li>
+                        <li>URL Pinecone и API ключ подставлены верно</li>
+                        <li>OpenRouter Credential имеет правильный Base URL</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <span class="icon">🎉</span>
+                <div>
+                    <strong>Поздравляем!</strong> Если бот отвечает — вы только что запустили свою RAG-систему! Теперь можно загрузить свои реальные документы и использовать бота для HR-консультаций.
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== RESULT SECTION ==================== -->
+        <div class="result-section" id="result">
+            <h2>🎉 Что вы получили</h2>
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="result-icon">📚</div>
+                    <h4>База знаний</h4>
+                    <p>Все регламенты в векторной базе — мгновенный поиск по смыслу</p>
+                </div>
+                <div class="result-item">
+                    <div class="result-icon">🎯</div>
+                    <h4>Точные ответы</h4>
+                    <p>Цитаты из конкретных статей и пунктов правил</p>
+                </div>
+                <div class="result-item">
+                    <div class="result-icon">🤖</div>
+                    <h4>24/7 Ассистент</h4>
+                    <p>Бот работает в Telegram круглосуточно без перерывов</p>
+                </div>
+                <div class="result-item">
+                    <div class="result-icon">🛡️</div>
+                    <h4>Без галлюцинаций</h4>
+                    <p>Отвечает только на основе загруженных документов</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== FAQ ==================== -->
+        <div class="faq-section" id="faq">
+            <h2 style="text-align: center; margin-bottom: 40px;">❓ Частые вопросы и проблемы</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Бот не реагирует на сообщения
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>1. Убедитесь, что Chat воркфлоу <strong>активирован</strong> (зеленый переключатель Active).</p>
+                    <p>2. Проверьте вкладку <strong>Executions</strong> — там видны все запуски и ошибки.</p>
+                    <p>3. Откройте Telegram Trigger ноду и убедитесь, что выбран правильный Credential.</p>
+                    <p>4. Попробуйте деактивировать и снова активировать воркфлоу.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Ошибка "Invalid API Key" в OpenRouter
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>1. Проверьте, что ключ начинается с <code>sk-or-</code>.</p>
+                    <p>2. Убедитесь, что на балансе OpenRouter есть средства (хотя бы $1).</p>
+                    <p>3. Проверьте, что в Credential указан Base URL: <code>https://openrouter.ai/api/v1</code></p>
+                    <p>4. Попробуйте создать новый ключ и подставить его заново.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Pinecone: "Index not found" или пустые результаты
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>1. Проверьте, что URL индекса в HTTP Request нодах совпадает с реальным URL из Pinecone Console.</p>
+                    <p>2. Убедитесь, что Ingestion воркфлоу отработал успешно (все ноды зеленые).</p>
+                    <p>3. Зайдите в Pinecone Console и проверьте, что в индексе есть записи (Vectors > 0).</p>
+                    <p>4. Dimensions индекса должны быть <strong>1536</strong> (для text-embedding-3-small).</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Telegram "chat not found" ошибка
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>1. Убедитесь, что вы <strong>написали боту /start</strong> перед тестом.</p>
+                    <p>2. Проверьте, что chat_id правильно передается между нодами (откройте Output каждой ноды в Executions).</p>
+                    <p>3. Если используете Group Chat — боту нужны права на чтение сообщений.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Сколько стоит использование бота?
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Pinecone:</strong> Бесплатный тариф (до 100K векторов).</p>
+                    <p><strong>OpenAI Embeddings:</strong> ~$0.02 за 1 млн токенов (очень дешево).</p>
+                    <p><strong>OpenRouter (DeepSeek):</strong> ~$0.14 за 1 млн токенов ввода. В среднем $0.01 за 100 запросов.</p>
+                    <p><strong>n8n Cloud:</strong> От $20/месяц. Self-hosted — бесплатно.</p>
+                    <p><strong>Итого для небольшой компании:</strong> $2-10/месяц.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Можно ли использовать свои PDF/документы вместо JSON?
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Да! Для этого нужно модифицировать Ingestion воркфлоу:</p>
+                    <p>1. Замените "Load Legal Data" на ноду <strong>Read Binary File</strong> или <strong>Google Drive</strong>.</p>
+                    <p>2. Добавьте ноду <strong>Extract from PDF</strong> для парсинга PDF.</p>
+                    <p>3. Остальная логика (chunking, embeddings, upsert) останется без изменений.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== NEXT STEPS ==================== -->
+        <div class="next-steps" id="next-steps">
+            <h2>🚀 Что дальше?</h2>
+            <p style="margin-bottom: 25px; color: var(--text-muted);">После успешной настройки вы можете расширить возможности бота:</p>
+
+            <div class="next-steps-grid">
+                <div class="next-step-item">
+                    <div class="step-num">1</div>
+                    <div>
+                        <h4>Загрузите реальные документы</h4>
+                        <p>Замените демо-данные на ваши HR-регламенты, политики, инструкции</p>
+                    </div>
+                </div>
+                <div class="next-step-item">
+                    <div class="step-num">2</div>
+                    <div>
+                        <h4>Добавьте голосовые сообщения</h4>
+                        <p>Подключите Groq Whisper для распознавания аудио (как в боте Mira)</p>
+                    </div>
+                </div>
+                <div class="next-step-item">
+                    <div class="step-num">3</div>
+                    <div>
+                        <h4>Подключите Google Sheets</h4>
+                        <p>Автоматически подгружайте данные из таблиц в Pinecone</p>
+                    </div>
+                </div>
+                <div class="next-step-item">
+                    <div class="step-num">4</div>
+                    <div>
+                        <h4>Добавьте аналитику</h4>
+                        <p>Логируйте запросы в Google Sheets для анализа популярных вопросов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <div class="scroll-top" id="scrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg viewBox="0 0 24 24">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
+        </svg>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Real Workflow Data
+        const chatJSON = {
+            "name": "Legal_RAG_Chat",
+            "nodes": [
+                {
+                    "parameters": {
+                        "updates": ["message"],
+                        "additionalFields": {}
+                    },
+                    "id": "telegram-trigger",
+                    "name": "Telegram Trigger",
+                    "type": "n8n-nodes-base.telegramTrigger",
+                    "typeVersion": 1.1,
+                    "position": [0, 0],
+                    "webhookId": "legal-rag-chat",
+                    "credentials": {
+                        "telegramApi": {
+                            "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+                            "name": "Telegram Bot"
+                        }
+                    }
+                },
+                {
+                    "parameters": {
+                        "jsCode": "const message = $input.item.json.message || $input.item.json;\nconst chatId = message.chat?.id || message.from?.id;\nconst question = message.text || 'Пустое сообщение';\n\nreturn [{\n  json: {\n    chat_id: chatId,\n    question: question\n  }\n}];"
+                    },
+                    "id": "code-extract",
+                    "name": "Extract Question",
+                    "type": "n8n-nodes-base.code",
+                    "typeVersion": 2,
+                    "position": [220, 0]
+                },
+                {
+                    "parameters": {
+                        "model": "text-embedding-3-small",
+                        "text": "={{ $json.question }}"
+                    },
+                    "id": "openai-embed-query",
+                    "name": "Embed Question",
+                    "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+                    "typeVersion": 1,
+                    "position": [440, 0],
+                    "credentials": {
+                        "openAiApi": {
+                            "id": "YOUR_OPENAI_CREDENTIAL_ID",
+                            "name": "OpenAI account"
+                        }
+                    }
+                },
+                {
+                    "parameters": {
+                        "method": "POST",
+                        "url": "https://legal-assistant-61z1031.svc.aped-4627-b74a.pinecone.io/query",
+                        "sendHeaders": true,
+                        "headerParameters": {
+                            "parameters": [
+                                { "name": "Api-Key", "value": "YOUR_PINECONE_API_KEY" },
+                                { "name": "Content-Type", "value": "application/json" }
+                            ]
+                        },
+                        "sendBody": true,
+                        "specifyBody": "json",
+                        "jsonBody": "={\n  \"vector\": {{ JSON.stringify($json.embedding) }},\n  \"topK\": 5,\n  \"includeMetadata\": true\n}"
+                    },
+                    "id": "http-pinecone-query",
+                    "name": "Pinecone Query",
+                    "type": "n8n-nodes-base.httpRequest",
+                    "typeVersion": 4.2,
+                    "position": [660, 0]
+                },
+                {
+                    "parameters": {
+                        "jsCode": "const input = $input.item.json;\nconst matches = input.matches || [];\n\nconst extractNode = $node['Extract Question'];\nconst question = extractNode.json.question;\nconst chatId = extractNode.json.chat_id;\n\nif (matches.length === 0) {\n  return [{\n    json: {\n      context: '❌ В базе знаний нет информации по этому вопросу.',\n      question: question,\n      chat_id: chatId\n    }\n  }];\n}\n\nconst context = matches.slice(0, 3).map((m, i) => {\n  const meta = m.metadata || {};\n  const source = `${meta.code || '?'} ст. ${meta.article || '?'}`;\n  const text = meta.text || '[текст отсутствует]';\n  return `📄 Источник ${i+1}: ${source}\\n${text}`;\n}).join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    context: context,\n    question: question,\n    chat_id: chatId\n  }\n}];"
+                    },
+                    "id": "code-format",
+                    "name": "Format Context",
+                    "type": "n8n-nodes-base.code",
+                    "typeVersion": 2,
+                    "position": [880, 0]
+                },
+                {
+                    "parameters": {
+                        "model": "gpt-4o-mini",
+                        "messages": {
+                            "values": [
+                                {
+                                    "content": "Ты - профессиональный юридический консультант.\n\nПРАВИЛА:\n1. Отвечай ТОЛЬКО на основе предоставленного контекста\n2. Обязательно цитируй источники: \"Согласно ст. X [Код], ...\"\n3. Если в контексте нет ответа, скажи: \"В предоставленных документах нет информации по этому вопросу\"\n4. НЕ придумывай факты\n5. В конце КАЖДОГО ответа добавляй строку:\n\n\"⚠️ Это демо-система. Не является юридической консультацией.\"",
+                                    "role": "system"
+                                },
+                                {
+                                    "content": "=Контекст из базы знаний:\n{{ $json.context }}\n\nВопрос пользователя: {{ $json.question }}",
+                                    "role": "user"
+                                }
+                            ]
+                        },
+                        "options": {}
+                    },
+                    "id": "openai-chat",
+                    "name": "Legal AI Response",
+                    "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+                    "typeVersion": 1,
+                    "position": [1100, 0],
+                    "credentials": {
+                        "openAiApi": {
+                            "id": "YOUR_OPENROUTER_CREDENTIAL_ID",
+                            "name": "OpenRouter"
+                        }
+                    }
+                },
+                {
+                    "parameters": {
+                        "chatId": "={{ $node['Format Context'].json.chat_id }}",
+                        "text": "={{ $json.message.content }}",
+                        "additionalFields": {
+                            "parse_mode": "Markdown"
+                        }
+                    },
+                    "id": "telegram-send",
+                    "name": "Send Telegram Response",
+                    "type": "n8n-nodes-base.telegram",
+                    "typeVersion": 1.2,
+                    "position": [1320, 0],
+                    "credentials": {
+                        "telegramApi": {
+                            "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+                            "name": "Telegram Bot"
+                        }
+                    }
+                }
+            ],
+            "connections": {
+                "Telegram Trigger": { "main": [[{ "node": "Extract Question", "type": "main", "index": 0 }]] },
+                "Extract Question": { "main": [[{ "node": "Embed Question", "type": "main", "index": 0 }]] },
+                "Embed Question": { "main": [[{ "node": "Pinecone Query", "type": "main", "index": 0 }]] },
+                "Pinecone Query": { "main": [[{ "node": "Format Context", "type": "main", "index": 0 }]] },
+                "Format Context": { "main": [[{ "node": "Legal AI Response", "type": "main", "index": 0 }]] },
+                "Legal AI Response": { "main": [[{ "node": "Send Telegram Response", "type": "main", "index": 0 }]] }
+            }
+        };
+
+        const ingestionJSON = {
+            "name": "Legal_RAG_Ingestion",
+            "nodes": [
+                {
+                    "parameters": {},
+                    "id": "trigger-1",
+                    "name": "Manual Trigger",
+                    "type": "n8n-nodes-base.manualTrigger",
+                    "typeVersion": 1,
+                    "position": [0, 0]
+                },
+                {
+                    "parameters": {
+                        "jsCode": "const legalData = [\n  {\n    \"id\": \"uk_158\",\n    \"content\": \"Статья 158 УК РФ. Кража. 1. Кража, то есть тайное хищение чужого имущества, - наказывается штрафом в размере до восьмидесяти тысяч рублей или в размере заработной платы или иного дохода осужденного за период до шести месяцев, либо обязательными работами на срок до трехсот шестидесяти часов, либо исправительными работами на срок до одного года, либо ограничением свободы на срок до двух лет, либо принудительными работами на срок до двух лет, либо арестом на срок до четырех месяцев, либо лишением свободы на срок до двух лет.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"УК РФ\", \"article\": \"158\" }\n  },\n  {\n    \"id\": \"uk_159\",\n    \"content\": \"Статья 159 УК РФ. Мошенничество. 1. Мошенничество, то есть хищение чужого имущества или приобретение права на чужое имущество путем обмана или злоупотребления доверием, - наказывается штрафом в размере до ста двадцати тысяч рублей или в размере заработной платы или иного дохода осужденного за период до одного года, либо обязательными работами на срок до трехсот шестидесяти часов, либо исправительными работами на срок до одного года, либо ограничением свободы на срок до двух лет, либо принудительными работами на срок до двух лет, либо арестом на срок до четырех месяцев, либо лишением свободы на срок до двух лет.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"УК РФ\", \"article\": \"159\" }\n  },\n  {\n    \"id\": \"gk_450\",\n    \"content\": \"Статья 450 ГК РФ. Основания изменения и расторжения договора. 1. Изменение и расторжение договора возможны по соглашению сторон, если иное не предусмотрено настоящим Кодексом, другими законами или договором. 2. По требованию одной из сторон договор может быть изменен или расторгнут по решению суда только: 1) при существенном нарушении договора другой стороной; 2) в иных случаях, предусмотренных настоящим Кодексом, другими законами или договором.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"ГК РФ\", \"article\": \"450\" }\n  },\n  {\n    \"id\": \"gk_619\",\n    \"content\": \"Статья 619 ГК РФ. Досрочное расторжение договора аренды по требованию арендодателя. По требованию арендодателя договор аренды может быть досрочно расторгнут судом в случаях, когда арендатор: пользуется имуществом с существенным нарушением условий договора; существенно ухудшает имущество; более двух раз подряд по истечении установленного договором срока платежа не вносит арендную плату.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"ГК РФ\", \"article\": \"619\" }\n  },\n  {\n    \"id\": \"tk_77\",\n    \"content\": \"Статья 77 ТК РФ. Общие основания прекращения трудового договора. Основаниями прекращения трудового договора являются: 1) соглашение сторон; 2) истечение срока трудового договора; 3) расторжение трудового договора по инициативе работника; 4) расторжение трудового договора по инициативе работодателя; 5) перевод работника по его просьбе или с его согласия на работу к другому работодателю.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"ТК РФ\", \"article\": \"77\" }\n  },\n  {\n    \"id\": \"tk_81\",\n    \"content\": \"Статья 81 ТК РФ. Расторжение трудового договора по инициативе работодателя. Трудовой договор может быть расторгнут работодателем в случаях: 1) ликвидации организации; 2) сокращения численности или штата работников; 3) несоответствия работника занимаемой должности; 5) неоднократного неисполнения работником трудовых обязанностей; 6) однократного грубого нарушения: а) прогула; б) появления на работе в состоянии опьянения; в) разглашения охраняемой законом тайны.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"ТК РФ\", \"article\": \"81\" }\n  },\n  {\n    \"id\": \"tk_392\",\n    \"content\": \"Статья 392 ТК РФ. Сроки обращения в суд за разрешением индивидуального трудового спора. Работник имеет право обратиться в суд за разрешением индивидуального трудового спора в течение трех месяцев со дня, когда он узнал или должен был узнать о нарушении своего права, а по спорам об увольнении - в течение одного месяца со дня вручения ему копии приказа об увольнении. За разрешением спора о невыплате заработной платы работник имеет право обратиться в суд в течение одного года со дня установленного срока выплаты.\",\n    \"metadata\": { \"type\": \"law\", \"code\": \"ТК РФ\", \"article\": \"392\" }\n  }\n];\n\nreturn legalData.map(item => ({ json: item }));"
+                    },
+                    "id": "code-load",
+                    "name": "Load Legal Data",
+                    "type": "n8n-nodes-base.code",
+                    "typeVersion": 2,
+                    "position": [220, 0]
+                },
+                {
+                    "parameters": {
+                        "jsCode": "const item = $input.item.json;\nconst content = item.content;\n\nconst chunkSize = 1200;\nconst overlap = 250;\nconst chunks = [];\n\nfor (let i = 0; i < content.length; i += (chunkSize - overlap)) {\n  const chunkText = content.slice(i, i + chunkSize);\n  if (chunkText.length > 50) {\n    chunks.push({\n      text: chunkText,\n      metadata: {\n        text: chunkText,\n        type: item.metadata.type,\n        code: item.metadata.code,\n        article: item.metadata.article,\n        chunk_index: chunks.length,\n        source_id: item.id\n      }\n    });\n  }\n}\n\nreturn chunks.map(c => ({ json: c }));"
+                    },
+                    "id": "code-chunk",
+                    "name": "Chunking with Metadata",
+                    "type": "n8n-nodes-base.code",
+                    "typeVersion": 2,
+                    "position": [440, 0]
+                },
+                {
+                    "parameters": {
+                        "model": "text-embedding-3-small",
+                        "text": "={{ $json.text }}"
+                    },
+                    "id": "openai-embed",
+                    "name": "OpenAI Embeddings",
+                    "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+                    "typeVersion": 1,
+                    "position": [660, 0],
+                    "credentials": {
+                        "openAiApi": {
+                            "id": "YOUR_OPENAI_CREDENTIAL_ID",
+                            "name": "OpenAI account"
+                        }
+                    }
+                },
+                {
+                    "parameters": {
+                        "method": "POST",
+                        "url": "https://legal-assistant-61z1031.svc.aped-4627-b74a.pinecone.io/vectors/upsert",
+                        "sendHeaders": true,
+                        "headerParameters": {
+                            "parameters": [
+                                { "name": "Api-Key", "value": "YOUR_PINECONE_API_KEY" },
+                                { "name": "Content-Type", "value": "application/json" }
+                            ]
+                        },
+                        "sendBody": true,
+                        "specifyBody": "json",
+                        "jsonBody": "={\n  \"vectors\": [{\n    \"id\": \"{{ $json.metadata.source_id }}_{{ $json.metadata.chunk_index }}\",\n    \"values\": {{ JSON.stringify($json.embedding) }},\n    \"metadata\": {\n      \"text\": {{ JSON.stringify($json.metadata.text) }},\n      \"type\": \"{{ $json.metadata.type }}\",\n      \"code\": \"{{ $json.metadata.code }}\",\n      \"article\": \"{{ $json.metadata.article }}\"\n    }\n  }]\n}"
+                    },
+                    "id": "http-pinecone",
+                    "name": "Pinecone Upsert",
+                    "type": "n8n-nodes-base.httpRequest",
+                    "typeVersion": 4.2,
+                    "position": [880, 0]
+                },
+                {
+                    "parameters": {
+                        "assignments": {
+                            "assignments": [
+                                {
+                                    "id": "log-1",
+                                    "name": "status",
+                                    "value": "=Uploaded: {{ $json.metadata.source_id }}_{{ $json.metadata.chunk_index }}",
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "set-log",
+                    "name": "Log Success",
+                    "type": "n8n-nodes-base.set",
+                    "typeVersion": 3.4,
+                    "position": [1100, 0]
+                }
+            ],
+            "connections": {
+                "Manual Trigger": { "main": [[{ "node": "Load Legal Data", "type": "main", "index": 0 }]] },
+                "Load Legal Data": { "main": [[{ "node": "Chunking with Metadata", "type": "main", "index": 0 }]] },
+                "Chunking with Metadata": { "main": [[{ "node": "OpenAI Embeddings", "type": "main", "index": 0 }]] },
+                "OpenAI Embeddings": { "main": [[{ "node": "Pinecone Upsert", "type": "main", "index": 0 }]] },
+                "Pinecone Upsert": { "main": [[{ "node": "Log Success", "type": "main", "index": 0 }]] }
+            }
+        };
+
+        function downloadWorkflow(type) {
+            const data = type === 'ingestion' ? ingestionJSON : chatJSON;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute("href", dataStr);
+            a.setAttribute("download", (type === 'ingestion' ? 'Legal_RAG_Ingestion' : 'Legal_RAG_Chat') + ".json");
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        // Lightbox
+        function openLightbox(img) {
+            const lightbox = document.getElementById('lightbox');
+            document.getElementById('lightboxImg').src = img.src;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Progress Bar & Scroll
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+
+            const scrollTop = document.getElementById('scrollTop');
+            if (winScroll > 300) {
+                scrollTop.classList.add('visible');
+            } else {
+                scrollTop.classList.remove('visible');
+            }
+        });
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.step-card, .requirements-box, .about-section, .faq-item, .result-section, .next-steps').forEach(card => {
+            observer.observe(card);
+        });
+
+        // FAQ Toggle
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            document.querySelectorAll('.faq-item.open').forEach(item => {
+                if (item !== faqItem) item.classList.remove('open');
+            });
+            faqItem.classList.toggle('open');
+        }
+
+        // Step completion with localStorage
+        function toggleStepComplete(step, isChecked) {
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            const index = step + 1;
+            if (navLinks[index]) {
+                if (isChecked) navLinks[index].classList.add('completed');
+                else navLinks[index].classList.remove('completed');
+            }
+            localStorage.setItem(`rag_step${step}Complete`, isChecked);
+        }
+
+        // Restore completed steps
+        function restoreCompletedSteps() {
+            for (let i = 1; i <= 5; i++) {
+                const isCompleted = localStorage.getItem(`rag_step${i}Complete`) === 'true';
+                if (isCompleted) {
+                    const checkbox = document.querySelector(`#step${i} .step-checkbox input`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        toggleStepComplete(i, true);
+                    }
+                }
+            }
+        }
+        restoreCompletedSteps();
+    </script>
+</body>
+
+</html>

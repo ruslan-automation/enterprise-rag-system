@@ -1,0 +1,264 @@
+{
+  "name": "Legal_RAG_Ingestion",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "position": [
+        64,
+        224
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cohere.ai/v1/embed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'embed-multilingual-v3.0', texts: [$json.text], input_type: 'search_document' }) }}",
+        "options": {}
+      },
+      "id": "create-embeddings",
+      "name": "Create Embeddings",
+      "position": [
+        672,
+        224
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "RAG юрист (cohere)"
+        },
+        "httpHeaderAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "RAG юрист pinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const embedding = $json.embeddings[0];\nconst doc = $('Loop Over Items').item.json;\n\nreturn [{\n  json: {\n    vectors: [{\n      id: doc.id,\n      values: embedding,\n      metadata: {\n        title: doc.title,\n        text: doc.text\n      }\n    }]\n  }\n}];"
+      },
+      "id": "prepare-upsert",
+      "name": "Prepare Upsert",
+      "position": [
+        864,
+        224
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rag-61z1031.svc.aped-4627-b74a.pinecone.io/vectors/upsert",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "upsert-pinecone",
+      "name": "Upsert to Pinecone",
+      "position": [
+        1088,
+        224
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "RAG юрист pinecone"
+        },
+        "httpBearerAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "RAG юрист  (OpenRouter)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const totalDocs = $('Read Knowledge Base').all().length;\nreturn [{\n  json: {\n    status: 'success',\n    message: `Загружено ${totalDocs} документов в Pinecone`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "success-message",
+      "name": "Success",
+      "position": [
+        1328,
+        224
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CZlaAYKY7LHZb-SdC721zNua3UE7x-DJX6LWsKsSO-Q",
+          "mode": "list",
+          "cachedResultName": "Read Knowledge Base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CZlaAYKY7LHZb-SdC721zNua3UE7x-DJX6LWsKsSO-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CZlaAYKY7LHZb-SdC721zNua3UE7x-DJX6LWsKsSO-Q/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "google-sheets",
+      "name": "Read Knowledge Base",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        288,
+        208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets minimaxcreator"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "split-batches",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create Embeddings": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Prepare Upsert",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Prepare Upsert": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Upsert to Pinecone",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Upsert to Pinecone": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Success",
+            "type": "main"
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Knowledge Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Knowledge Base": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "0": [
+        [
+          {
+            "node": "Success",
+            "type": "0",
+            "index": 0
+          }
+        ]
+      ],
+      "1": [
+        [
+          {
+            "node": "Create Embeddings",
+            "type": "1",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "9d9d9708-be71-48c4-8ee9-f41251d50859",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "063c8cba689329b722d1b1e1bfe8a02783ad3f5ae1e8b014d1ebde538179b085"
+  },
+  "id": "cOBAbl3ox1wzP9RK",
+  "tags": []
+}

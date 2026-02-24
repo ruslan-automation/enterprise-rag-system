@@ -1,0 +1,202 @@
+{
+  "name": "HR_RAG_Ingestion",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "position": [
+        208,
+        304
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CZlaAYKY7LHZb-SdC721zNua3UE7x-DJX6LWsKsSO-Q",
+          "mode": "list",
+          "cachedResultName": "Read Knowledge Base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CZlaAYKY7LHZb-SdC721zNua3UE7x-DJX6LWsKsSO-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CZlaAYKY7LHZb-SdC721zNua3UE7x-DJX6LWsKsSO-Q/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "read-sheet",
+      "name": "Read HR Policies",
+      "position": [
+        432,
+        304
+      ],
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Google Sheets minimaxcreator"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берем все поля из строки и объединяем в один текст\nconst row = $json;\nconst keys = Object.keys(row);\n\n// Пропускаем пустые строки (если все поля пустые)\nconst values = keys.map(k => row[k]).filter(v => v && String(v).trim());\nif (values.length === 0) {\n  return []; // пропускаем\n}\n\n// Первый непустой ключ - это ID\nconst firstKey = keys[0];\nconst id = String(row[firstKey] || 'row_' + $itemIndex).replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();\n\n// Второй ключ - это заголовок\nconst title = row[keys[1]] || row[keys[0]] || 'Без названия';\n\n// Объединяем все поля в текст\nconst text = keys.map(k => `${k}: ${row[k] || ''}`).join('. ');\n\nreturn [{\n  json: {\n    id: id + '_' + $itemIndex,\n    title: title,\n    text: text\n  }\n}];"
+      },
+      "id": "combine-all",
+      "name": "Combine All Fields",
+      "position": [
+        640,
+        304
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cohere.ai/v1/embed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'embed-multilingual-v3.0', texts: [$json.text], input_type: 'search_document' }) }}",
+        "options": {}
+      },
+      "id": "create-embeddings",
+      "name": "Create Embeddings",
+      "position": [
+        864,
+        304
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "RAG юрист (cohere)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const embedding = $json.embeddings[0];\nconst id = $('Combine All Fields').item.json.id;\nconst title = $('Combine All Fields').item.json.title;\nconst text = $('Combine All Fields').item.json.text;\n\nreturn [{\n  json: {\n    vectors: [{\n      id: id,\n      values: embedding,\n      metadata: {\n        title: title,\n        text: text\n      }\n    }]\n  }\n}];"
+      },
+      "id": "prepare-pinecone",
+      "name": "Prepare Pinecone Data",
+      "position": [
+        1088,
+        304
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rag-61z1031.svc.aped-4627-b74a.pinecone.io/vectors/upsert",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "upsert-pinecone",
+      "name": "Upsert to Pinecone",
+      "position": [
+        1312,
+        304
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "RAG юрист pinecone"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Combine All Fields": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Create Embeddings",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Create Embeddings": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Prepare Pinecone Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Read HR Policies",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Prepare Pinecone Data": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Upsert to Pinecone",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Read HR Policies": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Combine All Fields",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "992500c7-085a-48cb-9a71-5ddab55a765e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "063c8cba689329b722d1b1e1bfe8a02783ad3f5ae1e8b014d1ebde538179b085"
+  },
+  "id": "Hgj6F7wXagslfdge",
+  "tags": []
+}
