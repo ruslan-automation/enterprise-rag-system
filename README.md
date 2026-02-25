@@ -16,11 +16,10 @@
 
 ![Workflow Architecture](assets/Zarub_1.jpg)
 
-### Основные компоненты:
-1. **Векторная база данных**: Хранение документов (Qdrant / Pinecone).
-2. **Embeddings Engine**: Python-скрипт (`embed_images.py`) для подготовки и векторизации базы знаний.
-3. **Retrieval-Augmented Generation (RAG)**: Логика извлечения релевантного контекста.
-4. **LLM**: Быстрая генерация ответа на базе извлеченных данных.
+### Структура репозитория:
+* 📁 `docs/` — подробные мануалы (`HR_RAG_COMPLETE_GUIDE.md`, HTML-экспорты базы знаний).
+* 📁 `workflows/` — готовые схемы для импорта в n8n (`Legal_RAG_Chat.json`, `HR_RAG_Ingestion.json`).
+* 📁 `src/` — Python скрипты для генерации векторных эмбеддингов (`embed_images.py`).
 
 ---
 
@@ -41,8 +40,3 @@
 * **Embeddings & Scripts**: Python 3.12, Pinecone / Qdrant
 * **LLM API**: OpenRouter (Claude 3.5 Sonnet / Llama 3), Groq
 * **Интерфейс**: Telegram Bot API
-
-## 🚀 Детальная документация
-Внутри репозитория доступны подробные инструкции по развертыванию:
-* `HR_RAG_COMPLETE_GUIDE.md` 
-* `DETAILED_IMPLEMENTATION_GUIDE.md`
